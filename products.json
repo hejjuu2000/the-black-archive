@@ -1,19 +1,19 @@
 [
   {
-    "id": "SUBJECT-001",
-    "name": "The Observer",
+    "id": "Drug handler",
+    "name": "Hampus",
     "category": "People",
-    "price": 49.99,
+    "price": 109.99,
     "symbol": "◉",
     "image": "",
     "glow": "#54222b",
     "status": "ACTIVE",
-    "tag": "ENTITY / 001",
-    "short": "He appears in photographs taken after midnight. No one remembers seeing him arrive.",
-    "story": "No one remembers when he first appeared in the recordings. He never speaks. He never moves when observed directly. Yet every photograph taken after midnight shows him standing closer. The oldest image is dated 03:17 AM, though the building was demolished decades earlier.",
-    "classification": "UNKNOWN",
-    "origin": "REDACTED",
-    "risk": "SEVERE"
+    "tag": "PERSON / 001",
+    "short": "He is a 15 year old, person lives in umeå and is good at working. A perfect chice if your gonna do childlabour",
+    "story": "Just a normal kid who can work hard, is from sweden.",
+    "classification": "Human kid",
+    "Rating 5/5": "REDACTED",
+    "Work rate": "Extreme"
   },
   {
     "id": "SUBJECT-002",
