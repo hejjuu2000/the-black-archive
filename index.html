@@ -39,12 +39,7 @@ footer{border-top:1px solid var(--line);padding:28px 0 36px;color:#827980;font:1
   <div class="ticker">DO NOT TRUST EVERY RECORD <span>✳</span> ALL SUBJECTS ARE FICTIONAL <span>✳</span> ARCHIVE STATUS: OPEN <span>✳</span> DO NOT TRUST EVERY RECORD <span>✳</span></div>
   <section class="wrap section" id="catalog">
     <div class="section-head"><div><div class="kicker">01 / SELECT A DEPARTMENT</div><h2>Browse the archive</h2></div><div class="section-note">Choose a department or search the collection. Open a file to uncover its story and archive details.</div></div>
-    <div class="category-grid" id="categoryGrid">
-      <button class="category active" data-category="All"><span class="cat-num">DEPT. 00</span><span class="cat-icon">⌕</span><span class="cat-name">ALL FILES</span><span class="cat-count">06</span></button>
-      <button class="category" data-category="People"><span class="cat-num">DEPT. 01</span><span class="cat-icon">♙</span><span class="cat-name">PEOPLE</span><span class="cat-count">03</span></button>
-      <button class="category" data-category="Objects"><span class="cat-num">DEPT. 02</span><span class="cat-icon">◇</span><span class="cat-name">OBJECTS</span><span class="cat-count">02</span></button>
-      <button class="category" data-category="Documents"><span class="cat-num">DEPT. 03</span><span class="cat-icon">▤</span><span class="cat-name">DOCUMENTS</span><span class="cat-count">01</span></button>
-    </div>
+    <div class="category-grid" id="categoryGrid"></div>
     <div class="catalog-tools"><label class="searchbox"><span class="search-icon">⌕</span><input id="searchInput" type="search" placeholder="Search files, names, ID..." aria-label="Sök i katalogen"></label><select class="select" id="sortSelect" aria-label="Sortera katalogen"><option value="featured">Sort: Featured</option><option value="low">Price: Low to high</option><option value="high">Price: High to low</option><option value="az">Name: A–Z</option></select></div>
     <div class="cards" id="cards"></div>
   </section>
@@ -57,33 +52,54 @@ footer{border-top:1px solid var(--line);padding:28px 0 36px;color:#827980;font:1
 <div class="modal-backdrop" id="modalBackdrop" role="dialog" aria-modal="true" aria-label="Archive file"><div class="modal"><button class="modal-close" id="modalClose" aria-label="Stäng">✕</button><div class="modal-content" id="modalContent"></div></div></div>
 <script>
 let items = [];
-
-const money = n => "€" + n.toFixed(2);
+const money = n => "€" + (Number.isFinite(Number(n)) ? Number(n).toFixed(2) : "0.00");
 const cards = document.getElementById("cards");
 const searchInput = document.getElementById("searchInput");
 const sortSelect = document.getElementById("sortSelect");
+const categoryGrid = document.getElementById("categoryGrid");
 let activeCategory = "All";
+const esc = value => String(value ?? "").replace(/[&<>"']/g, ch => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[ch]));
+const displayLabel = key => key.replace(/([a-z])([A-Z])/g,"$1 $2").replace(/[_-]+/g," ").replace(/\b\w/g,c=>c.toUpperCase());
+const shown = value => value === undefined || value === null || value === "" ? "—" : String(value);
+function renderCategories(){
+ const categories = [...new Set(items.map(i => String(i.category || "Other")))];
+ const all = ["All", ...categories];
+ categoryGrid.innerHTML = all.map((category,index)=>{
+   const count = category === "All" ? items.length : items.filter(i=>String(i.category || "Other")===category).length;
+   const icon = category === "All" ? "⌕" : category.toLowerCase().includes("people") ? "♙" : category.toLowerCase().includes("object") ? "◇" : category.toLowerCase().includes("document") ? "▤" : "◈";
+   const number = String(index).padStart(2,"0");
+   return `<button class="category ${activeCategory===category?"active":""}" data-category="${esc(category)}"><span class="cat-num">DEPT. ${number}</span><span class="cat-icon">${icon}</span><span class="cat-name">${esc(category==="All"?"ALL FILES":category.toUpperCase())}</span><span class="cat-count">${String(count).padStart(2,"0")}</span></button>`;
+ }).join("");
+}
 function renderCards(){
- let list = items.filter(i => (activeCategory==="All" || i.category===activeCategory) && (i.name+" "+i.id+" "+i.short+" "+i.category).toLowerCase().includes(searchInput.value.toLowerCase().trim()));
- if(sortSelect.value==="low") list.sort((a,b)=>a.price-b.price);
- if(sortSelect.value==="high") list.sort((a,b)=>b.price-a.price);
- if(sortSelect.value==="az") list.sort((a,b)=>a.name.localeCompare(b.name));
+ let list = items.filter(i => (activeCategory==="All" || String(i.category || "Other")===activeCategory) && Object.values(i).join(" ").toLowerCase().includes(searchInput.value.toLowerCase().trim()));
+ if(sortSelect.value==="low") list.sort((a,b)=>Number(a.price||0)-Number(b.price||0));
+ if(sortSelect.value==="high") list.sort((a,b)=>Number(b.price||0)-Number(a.price||0));
+ if(sortSelect.value==="az") list.sort((a,b)=>String(a.name||"").localeCompare(String(b.name||"")));
  cards.innerHTML = "";
  if(!list.length){cards.innerHTML='<div class="empty">NO MATCHING RECORDS FOUND // TRY ANOTHER SEARCH</div>';return}
- list.forEach(i=>{
+ list.forEach((i,index)=>{
+  const id = String(i.id ?? `FILE-${index+1}`);
+  const name = String(i.name ?? "Untitled file");
+  const image = String(i.image ?? "").trim();
+  const symbol = String(i.symbol ?? "◈");
   const article=document.createElement("article");article.className="card";
-  article.innerHTML=`<div class="portrait" style="--glow:${i.glow}">${i.image?`<img class="portrait-image" src="${i.image}" alt="${i.name}">`:`<span class="portrait-symbol">${i.symbol}</span>`}<span class="portrait-code">${i.id}</span><span class="status">${i.status}</span></div><div class="card-body"><div class="card-meta"><span>${i.tag}</span><span>${i.category.toUpperCase()}</span></div><h3>${i.name}</h3><p>${i.short}</p><div class="card-bottom"><span class="price">${money(Number(i.price))}</span><button class="text-btn" data-open="${i.id}">OPEN FILE ↗</button></div></div>`;
+  article.innerHTML=`<div class="portrait" style="--glow:${esc(i.glow || "#51232a")}">${image?`<img class="portrait-image" src="${esc(image)}" alt="${esc(name)}" onerror="this.style.display='none'">`:`<span class="portrait-symbol">${esc(symbol)}</span>`}<span class="portrait-code">${esc(id)}</span><span class="status">${esc(shown(i.status))}</span></div><div class="card-body"><div class="card-meta"><span>${esc(shown(i.tag))}</span><span>${esc(String(i.category || "Other").toUpperCase())}</span></div><h3>${esc(name)}</h3><p>${esc(shown(i.short))}</p><div class="card-bottom"><span class="price">${money(Number(i.price||0))}</span><button class="text-btn" data-open="${esc(id)}">OPEN FILE ↗</button></div></div>`;
   cards.appendChild(article);
  });
 }
 function openItem(id){
- const i=items.find(x=>x.id===id);if(!i)return;
- document.getElementById("modalContent").innerHTML=`<div class="modal-visual" style="--glow:${i.glow}">${i.image?`<img class="modal-image" src="${i.image}" alt="${i.name}">`:`<span class="portrait-symbol">${i.symbol}</span>`}</div><div class="modal-info"><div class="kicker">${i.tag} // ${i.status}</div><h2>${i.name}</h2><p>${i.story}</p><div class="details"><div><span class="detail-label">CLASSIFICATION</span><span class="detail-value">${i.classification}</span></div><div><span class="detail-label">ORIGIN</span><span class="detail-value">${i.origin}</span></div><div><span class="detail-label">RISK LEVEL</span><span class="detail-value">${i.risk}</span></div><div><span class="detail-label">ARCHIVE VALUE</span><span class="detail-value">${money(Number(i.price))}</span></div></div><button class="btn" id="requestBtn" style="width:100%">REQUEST ACCESS ↗</button><div class="order-note" id="orderNote">REQUEST LOGGED LOCALLY. This is a fictional demo: no payment or real order was made.</div><p style="font-size:10px;color:#81777c">FICTIONAL LISTING // NO REAL TRANSACTION</p></div>`;
+ const i=items.find(x=>String(x.id)===String(id));if(!i)return;
+ const image=String(i.image??"").trim();
+ const standardKeys=new Set(["id","name","category","price","symbol","image","glow","short","story","tag"]);
+ const details=Object.entries(i).filter(([key,value])=>!standardKeys.has(key) && value!==undefined && value!==null && value!=="");
+ const detailHTML=details.length ? details.map(([key,value])=>`<div><span class="detail-label">${esc(displayLabel(key).toUpperCase())}</span><span class="detail-value">${esc(shown(value))}</span></div>`).join("") : `<div><span class="detail-label">CATEGORY</span><span class="detail-value">${esc(shown(i.category))}</span></div>`;
+ document.getElementById("modalContent").innerHTML=`<div class="modal-visual" style="--glow:${esc(i.glow || "#51232a")}">${image?`<img class="modal-image" src="${esc(image)}" alt="${esc(i.name || "File image")}" onerror="this.style.display='none'">`:`<span class="portrait-symbol">${esc(i.symbol || "◈")}</span>`}</div><div class="modal-info"><div class="kicker">${esc(shown(i.tag))} ${i.status?`// ${esc(i.status)}`:""}</div><h2>${esc(i.name || "Untitled file")}</h2><p>${esc(shown(i.story || i.short))}</p><div class="details">${detailHTML}</div><button class="btn" id="requestBtn" style="width:100%">REQUEST ACCESS ↗</button><div class="order-note" id="orderNote">REQUEST LOGGED LOCALLY. This is a fictional demo: no payment or real order was made.</div><p style="font-size:10px;color:#81777c">FICTIONAL LISTING // NO REAL TRANSACTION</p></div>`;
  document.getElementById("modalBackdrop").classList.add("open");document.body.style.overflow="hidden";
  document.getElementById("requestBtn").addEventListener("click",()=>document.getElementById("orderNote").classList.toggle("show"));
 }
 function closeModal(){document.getElementById("modalBackdrop").classList.remove("open");document.body.style.overflow=""}
-document.getElementById("categoryGrid").addEventListener("click",e=>{const b=e.target.closest("[data-category]");if(!b)return;activeCategory=b.dataset.category;document.querySelectorAll(".category").forEach(x=>x.classList.toggle("active",x===b));renderCards();});
+categoryGrid.addEventListener("click",e=>{const b=e.target.closest("[data-category]");if(!b)return;activeCategory=b.dataset.category;renderCategories();renderCards();});
 cards.addEventListener("click",e=>{const b=e.target.closest("[data-open]");if(b)openItem(b.dataset.open)});
 searchInput.addEventListener("input",renderCards);sortSelect.addEventListener("change",renderCards);
 document.getElementById("modalClose").addEventListener("click",closeModal);
@@ -91,7 +107,7 @@ document.getElementById("modalBackdrop").addEventListener("click",e=>{if(e.targe
 document.addEventListener("keydown",e=>{if(e.key==="Escape")closeModal()});
 document.getElementById("menuToggle").addEventListener("click",()=>document.getElementById("navlinks").classList.toggle("open"));
 document.querySelectorAll("#navlinks a").forEach(a=>a.addEventListener("click",()=>document.getElementById("navlinks").classList.remove("open")));
-fetch("products.json").then(response=>{if(!response.ok)throw new Error("Could not load products.json");return response.json()}).then(data=>{items=data;renderCards()}).catch(()=>{cards.innerHTML="<div class=empty>PRODUCT FILE NOT FOUND // MAKE SURE products.json IS UPLOADED BESIDE index.html</div>"});
+fetch("products.json").then(response=>{if(!response.ok)throw new Error("Could not load products.json");return response.json()}).then(data=>{if(!Array.isArray(data))throw new Error("products.json must contain a list");items=data;renderCategories();renderCards()}).catch(()=>{cards.innerHTML="<div class=empty>PRODUCT FILE NOT FOUND OR INVALID // CHECK products.json</div>"});
 </script>
 </body>
 </html>
