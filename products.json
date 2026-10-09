@@ -12,7 +12,7 @@
     "short": "He is a 15 year old, person lives in umeå and is good at working. A perfect chice if your gonna do childlabour",
     "story": "Just a normal kid who can work hard, is from sweden.",
     "classification": "15y Human kid",
-    "Rating": "5/5",
+    "Rating": "4/5",
     "Work rate": "Extreme"
   },
   {
@@ -32,20 +32,36 @@
     "Work rate": "Good"
   },
   {
-    "id": "SUBJECT-003",
-    "name": "The Physician",
+    "id": "Drug Lord",
+    "name": "Wilma Nilsson",
     "category": "People",
-    "price": 79.99,
+    "price": 979.99,
     "symbol": "☥",
     "image": "",
     "glow": "#4c3021",
-    "status": "RESTRICTED",
-    "tag": "ENTITY / 003",
-    "short": "A masked doctor whose patient records predate the hospital itself.",
-    "story": "A ledger was found sealed behind a wall during renovations. Its pages list patients who were never born and procedures that have no medical name. Every entry is signed by the same physician. The signature matches no known employee, but the mask in the attached sketch resembles a figure in the hospital's oldest painting.",
+    "Conditions": "great",
+    "tag": "PERSON / 003",
+    "short": "A good drug handler with betty and they have been trained together but Wilma is a bit older and more experienced.",
+    "story": "A great Drug handler and buissnes person",
     "classification": "RESTRICTED",
-    "origin": "OLD WARD",
-    "risk": "SEVERE"
+    "Rating": "5/5",
+    "Work rate": "Very Good"
+  },
+  {
+    "id": "Drug Producer",
+    "name": "Nowelia Nilsson",
+    "category": "People",
+    "price": 799.99,
+    "symbol": "@",
+    "image": "",
+    "glow": "#4c3021",
+    "Conditions": "great",
+    "tag": "PERSON / 003",
+    "short": "A great Drug producer and is very good at producing drugs to sell",
+    "story": "Best drug producer in town",
+    "classification": "RESTRICTED",
+    "Rating": "5/5",
+    "Work rate": "Mid"
   },
   {
     "id": "ARTIFACT-014",
