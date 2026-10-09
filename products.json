@@ -142,7 +142,7 @@
     "classification": "SEALED",
     "Rarity": "Rare",
     "Damage": "good"
-     },
+  },
   {
     "id": "Weapons",
     "name": "Ak 47",
@@ -158,5 +158,5 @@
     "classification": "SEALED",
     "Rarity": "Very Rare",
     "Damage": "great"
+  },
   {
-[
